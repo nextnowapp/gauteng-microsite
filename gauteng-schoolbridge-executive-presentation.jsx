@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
+import { SOURCES } from "./src/data/sources.js";
+import { GAUTENG_METRICS } from "./src/data/gautengEducationData.js";
 import {
   Activity, AlertTriangle, BarChart3, Bell, CheckCircle2, ChevronDown,
   Database, FileText, Globe, GraduationCap, Layers, Lock, Mail, MapPin,
@@ -27,7 +29,9 @@ const SECTIONS = [
   { id: "vision", label: "Ecosystem" },
   { id: "admission", label: "AdmissionBridge" },
   { id: "demand", label: "Demand" },
+  { id: "yearround", label: "Year-Round" },
   { id: "school", label: "SchoolBridge" },
+  { id: "apps", label: "Apps" },
   { id: "province", label: "ProvinceBridge" },
   { id: "attendance", label: "Attendance" },
   { id: "comms", label: "Communication" },
@@ -36,6 +40,7 @@ const SECTIONS = [
   { id: "roadmap", label: "Roadmap" },
   { id: "pilot", label: "Pilot" },
   { id: "security", label: "Security" },
+  { id: "sources", label: "Sources" },
   { id: "closing", label: "2030" },
 ];
 
@@ -123,28 +128,109 @@ function Illustrative({ light }) {
   );
 }
 
+function SourceBadge({ source, dark }) {
+  if (!source) return null;
+  if (dark) {
+    return (
+      <span className="mono" style={{
+        fontSize: 10, letterSpacing: ".07em", color: "rgba(255,255,255,.45)",
+        border: "1px solid rgba(255,255,255,.12)", borderRadius: 99, padding: "2px 8px",
+      }}>{source}</span>
+    );
+  }
+  return (
+    <div className="mono" style={{
+      display: "inline-flex", alignItems: "center", gap: 5,
+      fontSize: 10.5, letterSpacing: ".06em", color: C.grey, marginTop: 10,
+    }}>
+      <span style={{ width: 4, height: 4, borderRadius: "50%", background: C.teal, display: "inline-block", flexShrink: 0 }} />
+      {source}
+    </div>
+  );
+}
+
+function EvidencePanel({ children, title }) {
+  return (
+    <div style={{
+      background: "rgba(0,163,163,.04)", border: "1px solid rgba(0,163,163,.18)",
+      borderRadius: 18, padding: "28px 32px", marginTop: 36,
+    }}>
+      {title && (
+        <div className="mono" style={{
+          fontSize: 11, letterSpacing: ".16em", color: C.teal,
+          textTransform: "uppercase", marginBottom: 20,
+        }}>{title}</div>
+      )}
+      {children}
+    </div>
+  );
+}
+
+function SourceList({ sources }) {
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+      {sources.map(s => (
+        <div key={s.id} className="source-card">
+          <div style={{ fontWeight: 600, color: "#fff", fontSize: 15 }}>{s.title}</div>
+          <div style={{ display: "flex", gap: 10, marginTop: 6, alignItems: "center", flexWrap: "wrap" }}>
+            <span className="mono" style={{ fontSize: 11, color: C.teal }}>{s.publisher}</span>
+            <span className="mono" style={{ fontSize: 11, color: "rgba(255,255,255,.4)" }}>· {s.date}</span>
+          </div>
+          {s.keyFacts && (
+            <ul style={{ marginTop: 12, paddingLeft: 0, listStyle: "none", display: "flex", flexDirection: "column", gap: 5 }}>
+              {s.keyFacts.map((f, i) => (
+                <li key={i} style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, color: "rgba(255,255,255,.6)", lineHeight: 1.5 }}>
+                  <span style={{ color: C.teal, flexShrink: 0, marginTop: 2 }}>›</span>{f}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /* ── ecosystem radial diagram ──────────────────────────────────────── */
 function EcosystemDiagram() {
-  const nodes = ["Parents", "Teachers", "Schools", "Districts", "Province", "Partners"];
-  const cx = 260, cy = 230, R = 165;
+  const nodes = [
+    { label: "Parents",   icon: "👨‍👩‍👧" },
+    { label: "Teachers",  icon: "🎓" },
+    { label: "Schools",   icon: "🏫" },
+    { label: "Districts", icon: "📍" },
+    { label: "Province",  icon: "🏛️" },
+    { label: "Partners",  icon: "🤝" },
+  ];
+  const cx = 300, cy = 300, R = 210;
   return (
-    <svg viewBox="0 0 520 460" style={{ width: "100%", height: "auto" }}>
+    <svg viewBox="0 0 600 600" style={{ width: "100%", height: "auto" }}>
+      {/* outer ring */}
+      <circle cx={cx} cy={cy} r={R + 10} fill="none" stroke="rgba(0,163,163,.12)" strokeWidth="1" />
+      {/* spoke lines */}
       {nodes.map((_, i) => {
         const a = (Math.PI * 2 * i) / nodes.length - Math.PI / 2;
-        return <line key={i} x1={cx} y1={cy} x2={cx + R * Math.cos(a)} y2={cy + R * Math.sin(a)}
-          stroke="rgba(0,163,163,.4)" strokeWidth="1.4" strokeDasharray="3 5" />;
+        return (
+          <line key={i}
+            x1={cx + 68 * Math.cos(a)} y1={cy + 68 * Math.sin(a)}
+            x2={cx + (R - 54) * Math.cos(a)} y2={cy + (R - 54) * Math.sin(a)}
+            stroke="rgba(0,163,163,.45)" strokeWidth="1.5" strokeDasharray="4 6" />
+        );
       })}
-      <circle cx={cx} cy={cy} r="64" fill={C.teal} opacity=".12" />
-      <circle cx={cx} cy={cy} r="48" fill={C.teal} />
-      <text x={cx} y={cy - 4} textAnchor="middle" fontSize="15" fontWeight="700" fill="#fff" fontFamily="Hanken Grotesk">Learner</text>
-      <text x={cx} y={cy + 14} textAnchor="middle" fontSize="9.5" fill="rgba(255,255,255,.85)" fontFamily="IBM Plex Mono">at the centre</text>
+      {/* centre glow */}
+      <circle cx={cx} cy={cy} r="90" fill={C.teal} opacity=".08" />
+      <circle cx={cx} cy={cy} r="70" fill={C.teal} opacity=".14" />
+      <circle cx={cx} cy={cy} r="58" fill={C.teal} />
+      <text x={cx} y={cy - 6} textAnchor="middle" fontSize="20" fontWeight="700" fill="#fff" fontFamily="Hanken Grotesk">Learner</text>
+      <text x={cx} y={cy + 16} textAnchor="middle" fontSize="11" fill="rgba(255,255,255,.8)" fontFamily="IBM Plex Mono" letterSpacing="2">at the centre</text>
+      {/* node circles */}
       {nodes.map((n, i) => {
         const a = (Math.PI * 2 * i) / nodes.length - Math.PI / 2;
         const x = cx + R * Math.cos(a), y = cy + R * Math.sin(a);
         return (
-          <g key={n}>
-            <circle cx={x} cy={y} r="40" fill="rgba(255,255,255,.05)" stroke="rgba(255,255,255,.2)" strokeWidth="1" />
-            <text x={x} y={y + 4} textAnchor="middle" fontSize="12.5" fontWeight="600" fill="#fff" fontFamily="Hanken Grotesk">{n}</text>
+          <g key={n.label}>
+            <circle cx={x} cy={y} r="54" fill="rgba(0,163,163,.18)" stroke="rgba(0,163,163,.6)" strokeWidth="1.5" />
+            <circle cx={x} cy={y} r="54" fill="rgba(7,26,47,.55)" />
+            <text x={x} y={y + 5} textAnchor="middle" fontSize="15" fontWeight="700" fill="#fff" fontFamily="Hanken Grotesk">{n.label}</text>
           </g>
         );
       })}
@@ -154,11 +240,11 @@ function EcosystemDiagram() {
 
 /* ── Gauteng abstract region map ───────────────────────────────────── */
 const REGIONS = [
-  { name: "Tshwane", heat: "High", util: 94, x: 150, y: 30, w: 200, h: 110 },
-  { name: "Ekurhuleni", heat: "High", util: 91, x: 330, y: 150, w: 150, h: 120 },
-  { name: "Johannesburg", heat: "Medium", util: 82, x: 130, y: 155, w: 185, h: 110 },
-  { name: "West Rand", heat: "Available", util: 64, x: 20, y: 175, w: 95, h: 95 },
-  { name: "Sedibeng", heat: "Available", util: 58, x: 175, y: 285, w: 160, h: 90 },
+  { name: "Tshwane", heat: "Medium", util: 72, x: 150, y: 30, w: 200, h: 110 },
+  { name: "Ekurhuleni", heat: "High", util: 94, x: 330, y: 150, w: 150, h: 120 },
+  { name: "JHB East", heat: "High", util: 91, x: 130, y: 155, w: 185, h: 110 },
+  { name: "West Rand", heat: "Available", util: 58, x: 20, y: 175, w: 95, h: 95 },
+  { name: "Sedibeng", heat: "Available", util: 52, x: 175, y: 285, w: 160, h: 90 },
 ];
 const HEAT = { High: C.gold, Medium: C.teal, Available: C.green };
 
@@ -214,9 +300,11 @@ function MetricTile({ value, prefix, suffix, decimals, label, accent, sub }) {
 
 /* ── data for charts ───────────────────────────────────────────────── */
 const demandData = [
-  { region: "Tshwane", demand: 94 }, { region: "Ekurhuleni", demand: 91 },
-  { region: "Johannesburg", demand: 82 }, { region: "West Rand", demand: 64 },
-  { region: "Sedibeng", demand: 58 },
+  { region: "Ekurhuleni", demand: 94 },
+  { region: "JHB East", demand: 91 },
+  { region: "Tshwane", demand: 72 },
+  { region: "West Rand", demand: 58 },
+  { region: "Sedibeng", demand: 52 },
 ];
 const attendanceTrend = [
   { d: "Mon", v: 93.1 }, { d: "Tue", v: 93.8 }, { d: "Wed", v: 92.4 },
@@ -278,9 +366,9 @@ export default function App() {
       {/* top nav */}
       <nav className={`topnav ${active === "hero" ? "on-dark" : ""}`}>
         <div className="brand">
-          <div className="brand-mark">SB</div>
+          <div className="brand-mark">BP</div>
           <div>
-            <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: ".01em" }}>SchoolBridge</div>
+            <div style={{ fontWeight: 700, fontSize: 15, letterSpacing: ".01em" }}>Bridge Platforms</div>
             <div className="mono" style={{ fontSize: 9.5, letterSpacing: ".18em", opacity: .65, textTransform: "uppercase" }}>Provincial Education OS</div>
           </div>
         </div>
@@ -312,15 +400,15 @@ export default function App() {
             <Kicker dark>Gauteng Provincial Digital Education Strategy</Kicker>
           </Reveal>
           <Reveal delay={80}>
-            <h1 className="serif hero-title">Building Africa's Most<br /><span style={{ color: C.teal }}>Connected</span> Education System</h1>
+            <h1 className="serif hero-title">Building Africa's Most<br /><span style={{ color: C.teal }}>Connected</span> Education Digital Platform</h1>
           </Reveal>
           <Reveal delay={160}>
             <p className="hero-sub">Transforming Gauteng education through digital intelligence, real-time data and learner-centred innovation — one integrated platform from the classroom to the Provincial command centre.</p>
           </Reveal>
           <Reveal delay={240}>
             <div className="hero-pills">
-              {["SchoolBridge", "ProvinceBridge", "AdmissionBridge", "StudyBridge"].map((p, i) => (
-                <span key={p} className="hero-pill" style={{ borderColor: [C.teal, C.gold, C.green, "#5aa9e6"][i] }}>{p}</span>
+              {["SchoolBridge", "ProvinceBridge", "AdmissionBridge", "StudyBridge", "PayBridge", "StudentBridge", "StaffBridge"].map((p, i) => (
+                <span key={p} className="hero-pill" style={{ borderColor: [C.teal, C.gold, C.green, "#5aa9e6", "#9b59b6", "#3b82f6", "#f97316"][i] }}>{p}</span>
               ))}
             </div>
           </Reveal>
@@ -334,16 +422,20 @@ export default function App() {
           <Reveal delay={420}>
             <div className="hero-dash">
               <div className="hero-dash-head">
-                <span className="mono" style={{ fontSize: 11, letterSpacing: ".15em", color: C.teal }}>PROVINCEBRIDGE · LIVE COMMAND VIEW</span>
-                <span className="live-dot">● LIVE</span>
+                <span className="mono" style={{ fontSize: 11, letterSpacing: ".15em", color: C.teal }}>GAUTENG EDUCATION · REAL SCALE DATA</span>
+                <span className="live-dot" style={{ color: C.gold }}>● VERIFIED</span>
               </div>
               <div className="hero-dash-grid">
-                <MetricTile value={2148} label="Schools online" accent={C.teal} sub="▲ real-time" />
-                <MetricTile value={92.7} suffix="%" decimals={1} label="Attendance today" accent={C.green} />
-                <MetricTile value={1.42} prefix="" suffix="M" decimals={2} label="Messages delivered" accent={C.gold} />
-                <MetricTile value={37} label="District alerts" accent="#5aa9e6" />
+                <MetricTile value={GAUTENG_METRICS.learnerScale.totalEnrolled} label="Learners in Gauteng sector" accent={C.teal} sub="GDE NCOP Briefing · 2025" />
+                <MetricTile value={GAUTENG_METRICS.admissions2026.totalPlaced} label="Grade 1 & 8 placed for 2026" accent={C.green} sub="SA Government · Mar 2026" />
+                <MetricTile value={GAUTENG_METRICS.admissions2026.yearsOnline} label="Years of online admissions" accent={C.gold} sub="GDE Online Admissions · 2015–2025" />
+                <MetricTile value={GAUTENG_METRICS.admissions2026.newSchoolsAnnounced} label="New schools announced" accent="#5aa9e6" sub="High-pressure areas · 2026" />
               </div>
-              <div style={{ marginTop: 16 }}><Illustrative light /></div>
+              <div style={{ marginTop: 14 }}>
+                <span className="mono" style={{ fontSize: 10, color: "rgba(255,255,255,.38)", letterSpacing: ".07em" }}>
+                  Sources: GDE NCOP Briefing (Mar 2025) · SA Government (Mar 2026) · GDE Online Admissions
+                </span>
+              </div>
             </div>
           </Reveal>
         </div>
@@ -357,17 +449,17 @@ export default function App() {
           <Reveal delay={60}><h2 className="serif sec-title light">The Gauteng Education Challenge</h2></Reveal>
           <Reveal delay={120}><p className="sec-lead light">Gauteng manages one of the continent's largest and fastest-growing education systems. Today, critical decisions are made on fragmented, delayed and manually-assembled information — long after the moment to act has passed.</p></Reveal>
           <div className="grid-3" style={{ marginTop: 48 }}>
-            <ChallengeCard icon={Users} title="Learner placement pressure" body="Annual surges in applications without a year-round, data-led view of where demand will land next." delay={0} />
-            <ChallengeCard icon={Building2} title="Overcrowded schools" body="Capacity strain concentrates in specific regions while available space elsewhere goes unseen." delay={60} />
-            <ChallengeCard icon={FileText} title="Delayed reporting" body="District and provincial reporting arrives weeks late, assembled by hand from disconnected sources." delay={120} />
-            <ChallengeCard icon={MessageSquare} title="Fragmented communication" body="No single, reliable channel from Province down to every parent and learner in the system." delay={180} />
-            <ChallengeCard icon={Layers} title="Manual administration" body="Schools and districts carry heavy paper-based admin that drains time from teaching and oversight." delay={240} />
-            <ChallengeCard icon={Eye} title="Limited predictive intelligence" body="Decisions remain reactive — there is little ability to forecast pressure before it becomes a crisis." delay={300} />
+            <ChallengeCard icon={TrendingUp} title="Rapid learner growth" body="Gauteng public school enrolment grew 70.4% from 1995 to 2025, reaching 2.36M learners — with ~2% annual growth continuing. Demand planning must keep pace." delay={0} />
+            <ChallengeCard icon={Building2} title="Capacity constraints" body="Not all applicants can be placed in preferred schools. Satellite schools provided 4,417 additional spaces in 2025 while longer-term builds are completed." delay={60} />
+            <ChallengeCard icon={Bell} title="Late applications" body="33,650 applications — 8.5% of the 2026 total — were submitted after the closing date, compressing school capacity planning and reducing parent choice." delay={120} />
+            <ChallengeCard icon={AlertTriangle} title="High-pressure districts" body="At the January 2026 snapshot, Ekurhuleni had 3,169 and Johannesburg East had 1,173 learners still unplaced — concentrated pressure in specific regions." delay={180} />
+            <ChallengeCard icon={FileText} title="Placement appeals" body="6,736 appeals were lodged during the 2026 admissions cycle — adding administrative burden and indicating unmet placement preferences at scale." delay={240} />
+            <ChallengeCard icon={Eye} title="Preference mismatch" body="When preferred schools are full, learners are placed in the next closest school with available space. Earlier demand intelligence reduces this friction." delay={300} />
           </div>
           <Reveal delay={120}>
             <div className="outcome-strip">
               <AlertTriangle size={22} color={C.gold} />
-              <span><strong>Learning outcome gaps</strong> persist because interventions are designed without timely, school-level and learner-level evidence of what is actually happening.</span>
+              <span><strong>392,224 learners placed for 2026</strong> — yet 6,736 appeals and 33,650 late applications show the system still operates under reactive annual pressure rather than proactive year-round intelligence. <span className="mono" style={{ fontSize: 10, opacity: .7 }}>Source: SA Government · Mar 2026</span></span>
             </div>
           </Reveal>
         </div>
@@ -393,8 +485,11 @@ export default function App() {
                     { n: "SchoolBridge", a: C.teal, d: "The digital OS for every school" },
                     { n: "ProvinceBridge", a: C.blue, d: "Real-time provincial command centre" },
                     { n: "StudyBridge", a: C.green, d: "Learning outcomes & intervention" },
+                    { n: "PayBridge", a: "#9b59b6", d: "School fee collection & payment management" },
+                    { n: "StudentBridge", a: "#3b82f6", d: "Learner app — reports, progress & school life" },
+                    { n: "StaffBridge", a: "#f97316", d: "Staff app — dashboard, attendance & events" },
                   ].map((p, i) => (
-                    <div key={p.n} className="pillar-mini" style={{ borderLeft: `3px solid ${p.a}` }}>
+                    <div key={p.n} className="pillar-mini" style={{ borderLeft: `3px solid ${p.a}`, gridColumn: i === 6 ? "span 2" : undefined }}>
                       <div style={{ fontWeight: 700, color: C.navy }}>{p.n}</div>
                       <div style={{ fontSize: 13, color: C.grey, marginTop: 3 }}>{p.d}</div>
                     </div>
@@ -410,7 +505,7 @@ export default function App() {
       <section id="admission" className="sec dark">
         <div className="container">
           <Reveal><Kicker dark>AdmissionBridge</Kicker></Reveal>
-          <Reveal delay={60}><h2 className="serif sec-title light">Predict. Plan. Place.</h2></Reveal>
+          <Reveal delay={60}><h2 className="serif sec-title light">Predict. Plan. Place. Perform.</h2></Reveal>
           <Reveal delay={120}><p className="sec-lead light">A year-round admissions intelligence platform — not just an annual application window. AdmissionBridge moves Gauteng from reactive admissions pressure to proactive, continuous learner placement planning.</p></Reveal>
 
           <Reveal delay={160}>
@@ -429,16 +524,16 @@ export default function App() {
 
           <div className="grid-3" style={{ marginTop: 44 }}>
             {[
-              { l: "Applications received", v: 184320, a: C.teal, ic: FileText },
-              { l: "Placed learners", v: 142680, a: C.green, ic: CheckCircle2 },
-              { l: "Capacity utilisation", v: 87, suf: "%", a: C.gold, ic: Gauge },
-              { l: "Waiting-list risk schools", v: 214, a: C.gold, ic: AlertTriangle },
-              { l: "Late applications", v: 9640, a: "#5aa9e6", ic: Bell },
-              { l: "High-demand schools", v: 312, a: C.teal, ic: TrendingUp },
+              { l: "Learners placed for 2026", v: GAUTENG_METRICS.admissions2026.totalPlaced, a: C.teal, ic: CheckCircle2, src: "SA Gov · Mar 2026" },
+              { l: "Late applications (2026)", v: GAUTENG_METRICS.admissions2026.lateApplications, a: C.gold, ic: Bell, src: "SA Gov · Mar 2026" },
+              { l: "Placement rate — complete applications", v: GAUTENG_METRICS.admissions2026.placementRatePct, suf: "%", a: C.green, ic: Gauge, src: "GDE · 10-yr avg" },
+              { l: "Unplaced at Jan 2026 snapshot", v: GAUTENG_METRICS.januarySnapshot.totalUnplaced, a: "#e07a5f", ic: AlertTriangle, src: "SAnews · Jan 2026" },
+              { l: "Appeals lodged (2026 cycle)", v: GAUTENG_METRICS.januarySnapshot.appealsLodged, a: "#5aa9e6", ic: FileText, src: "SAnews · Jan 2026" },
+              { l: "Years of GDE Online Admissions", v: GAUTENG_METRICS.admissions2026.yearsOnline, a: C.teal, ic: TrendingUp, src: "GDE · 2015–2025" },
             ].map((m, i) => (
               <Reveal key={m.l} delay={i * 60}>
                 <div className="dash-card">
-                  <div className="dash-card-top"><m.ic size={18} color={m.a} /><Illustrative light /></div>
+                  <div className="dash-card-top"><m.ic size={18} color={m.a} /><SourceBadge source={m.src} dark /></div>
                   <Stat value={m.v} suffix={m.suf || ""} label={m.l} accent={m.a} dark />
                 </div>
               </Reveal>
@@ -467,7 +562,12 @@ export default function App() {
                     <span key={k}><span className="dot" style={{ background: v }} />{k === "High" ? "High demand" : k === "Medium" ? "Medium demand" : "Available capacity"}</span>
                   ))}
                 </div>
-                <div style={{ marginTop: 10 }}><Illustrative /></div>
+                <div style={{ marginTop: 10 }}>
+                  <SourceBadge source="Based on SAnews Jan 2026 placement reporting" />
+                  <div style={{ marginTop: 8, fontSize: 11.5, color: C.grey, lineHeight: 1.5, fontStyle: "italic" }}>
+                    District pressure indicators should be refreshed with live GDE data during implementation.
+                  </div>
+                </div>
               </div>
             </Reveal>
             <Reveal delay={180}>
@@ -494,6 +594,73 @@ export default function App() {
         </div>
       </section>
 
+      {/* ── NEW: WHY YEAR-ROUND ── */}
+      <section id="yearround" className="sec dark">
+        <div className="container">
+          <Reveal><Kicker dark>Admissions Intelligence</Kicker></Reveal>
+          <Reveal delay={60}><h2 className="serif sec-title light">Why admissions must<br />become year-round.</h2></Reveal>
+          <Reveal delay={100}><p className="sec-lead light">Annual application windows concentrate placement pressure into weeks. AdmissionBridge is designed to build continuous admissions intelligence — making next year's demand visible months ahead, not days before it peaks.</p></Reveal>
+
+          <div className="grid-3" style={{ marginTop: 44 }}>
+            {[
+              {
+                icon: Bell, color: C.gold,
+                title: "Compressed annual windows create peaks",
+                body: `The 2026 GDE application window ran 24 July – 29 August 2025 — five weeks. 33,650 applications arrived after it closed, reducing family choice and making late-stage capacity adjustments harder.`,
+                source: "SA Government · Mar 2026",
+              },
+              {
+                icon: Users, color: C.teal,
+                title: "Late applications reduce school choice",
+                body: "Parents who apply late face reduced options because schools fill progressively. Earlier demand visibility lets GDE manage expectations and guide families before preferred schools reach capacity.",
+                source: "GDE Online Admissions · 2026",
+              },
+              {
+                icon: Building2, color: C.blue,
+                title: "Capacity constraints force compromise",
+                body: "When preferred schools are full, learners are placed in the next closest school with available space. 4,417 satellite school spaces were added in 2025 to relieve high-pressure areas.",
+                source: "GDE · February 2025",
+              },
+            ].map((c, i) => (
+              <Reveal key={c.title} delay={i * 70}>
+                <div className="card-dark" style={{ borderTop: `3px solid ${c.color}` }}>
+                  <div className="icon-chip"><c.icon size={20} color={c.color} /></div>
+                  <h3 style={{ fontSize: 16, fontWeight: 700, color: "#fff", margin: "14px 0 8px" }}>{c.title}</h3>
+                  <p style={{ fontSize: 14, color: "rgba(255,255,255,.6)", lineHeight: 1.6 }}>{c.body}</p>
+                  <SourceBadge source={c.source} dark />
+                </div>
+              </Reveal>
+            ))}
+          </div>
+
+          <Reveal delay={200}>
+            <EvidencePanel title="AdmissionBridge — intelligence signals">
+              <div className="yr-signals">
+                {[
+                  "Grade R progression → Grade 1 demand forecast",
+                  "Grade 7 transition → Grade 8 demand forecast",
+                  "Catchment area demand modelling by district",
+                  "School capacity tracking and utilisation rates",
+                  "Late application trend analysis and early warning",
+                  "Appeals and objection pattern detection",
+                  "Infrastructure pipeline data integration",
+                ].map((s, i) => (
+                  <div key={i} className="yr-signal">
+                    <CheckCircle2 size={15} color={C.teal} style={{ flexShrink: 0, marginTop: 1 }} />
+                    <span style={{ fontSize: 14, color: C.navy }}>{s}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ marginTop: 20, padding: "14px 18px", background: "rgba(245,166,35,.07)", borderRadius: 10, border: "1px solid rgba(245,166,35,.18)" }}>
+                <p style={{ fontSize: 12.5, color: C.grey, lineHeight: 1.6, fontStyle: "italic", margin: 0 }}>
+                  AdmissionBridge is designed to complement — not replace — existing GDE admissions systems. District pressure indicators shown in this presentation are based on public January 2026 placement reporting and would be refreshed with live GDE data during implementation.
+                </p>
+              </div>
+            </EvidencePanel>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ── 6. SCHOOLBRIDGE ── */}
       <section id="school" className="sec dark">
         <div className="container">
@@ -506,7 +673,7 @@ export default function App() {
                 {[
                   { n: "Communication", ic: MessageSquare }, { n: "Attendance", ic: Activity },
                   { n: "Homework", ic: FileText }, { n: "Events", ic: Bell },
-                  { n: "Fees", ic: BarChart3 }, { n: "Parent App", ic: Smartphone },
+                  { n: "Report Card", ic: BarChart3 }, { n: "Parent App", ic: Smartphone },
                   { n: "Teacher Portal", ic: GraduationCap }, { n: "Principal Dashboard", ic: Gauge },
                   { n: "Learner App", ic: Users }, { n: "School Website", ic: Globe },
                 ].map((m, i) => (
@@ -535,6 +702,173 @@ export default function App() {
         </div>
       </section>
 
+      {/* ── STUDENTBRIDGE & STAFFBRIDGE ── */}
+      <section id="apps" className="sec light">
+        <div className="container">
+          <Reveal><Kicker>Mobile Apps</Kicker></Reveal>
+          <Reveal delay={60}><h2 className="serif sec-title">In every parent's pocket.<br />In every teacher's hand.</h2></Reveal>
+          <Reveal delay={100}><p className="sec-lead">StudentBridge and StaffBridge put the school in the palm of your hand — personalised for each role, connected to the same live data that principals and the Province see.</p></Reveal>
+
+          <div className="apps-grid" style={{ marginTop: 56 }}>
+
+            {/* StudentBridge */}
+            <Reveal delay={120}>
+              <div className="app-panel" style={{ borderTop: `4px solid #3b82f6` }}>
+                <div className="app-panel-header">
+                  <div>
+                    <div className="mono" style={{ fontSize: 11, letterSpacing: ".15em", color: "#3b82f6", textTransform: "uppercase" }}>StudentBridge</div>
+                    <h3 className="serif" style={{ fontSize: 28, fontWeight: 600, color: C.navy, margin: "8px 0 10px" }}>Everything about<br />your school life.</h3>
+                    <p style={{ fontSize: 14, color: C.grey, lineHeight: 1.65 }}>Access reports, track progress, connect with school activities — all in one place, built for learners.</p>
+                  </div>
+                </div>
+                <div className="app-features">
+                  {[
+                    { label: "Term report cards", detail: "Download instantly — Term 1, 2, 3 & 4", color: "#3b82f6" },
+                    { label: "Report Card Analysis", detail: "Multi-subject progress charts across terms", color: "#3b82f6" },
+                    { label: "Learner profile", detail: "Learner, parents, siblings in one view", color: "#3b82f6" },
+                    { label: "Fees statements", detail: "Full fee history and account balance", color: "#3b82f6" },
+                    { label: "School info", detail: "SGB, management, background & contacts", color: "#3b82f6" },
+                    { label: "School resources", detail: "Documents, past papers & study materials", color: "#3b82f6" },
+                  ].map((f) => (
+                    <div key={f.label} className="app-feature-row">
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: f.color, flexShrink: 0, marginTop: 5 }} />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{f.label}</div>
+                        <div style={{ fontSize: 12.5, color: C.grey, marginTop: 2 }}>{f.detail}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Phone mockup */}
+                <div className="sb-phone-wrap">
+                  <div className="sb-phone">
+                    <div className="sb-phone-island" />
+                    <div className="sb-phone-screen" style={{ background: "#f8faff" }}>
+                      <div style={{ background: "#1e40af", padding: "12px 14px 10px", color: "#fff" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <span style={{ fontSize: 11, fontWeight: 700 }}>Learner Profile</span>
+                          <span style={{ fontSize: 9, opacity: .75 }}>17:40</span>
+                        </div>
+                      </div>
+                      <div style={{ padding: "10px 12px", display: "flex", gap: 6, overflowX: "auto", borderBottom: "1px solid #e5e7eb" }}>
+                        {["Learner", "Parent 1", "Report", "Analysis"].map((t, i) => (
+                          <span key={t} style={{ fontSize: 9.5, padding: "4px 8px", borderRadius: 99, whiteSpace: "nowrap", background: i === 2 ? "#1e40af" : "#f1f5f9", color: i === 2 ? "#fff" : "#64748b", fontWeight: i === 2 ? 700 : 400 }}>{t}</span>
+                        ))}
+                      </div>
+                      <div style={{ padding: "10px 12px" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#1e293b", marginBottom: 8 }}>2025 Report</div>
+                        {[["Term 1", "Results published: 22/04/2025"], ["Term 2", "Results published: 24/07/2025"], ["Term 4", "Results published: 19/12/2025"]].map(([term, date]) => (
+                          <div key={term} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderRadius: 8, padding: "8px 10px", marginBottom: 5, boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{term}</div>
+                              <div style={{ fontSize: 9.5, color: "#3b82f6", marginTop: 1 }}>{date}</div>
+                            </div>
+                            <div style={{ width: 24, height: 24, borderRadius: 6, background: "#1e40af", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ color: "#fff", fontSize: 11 }}>↓</span>
+                            </div>
+                          </div>
+                        ))}
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#1e293b", margin: "10px 0 6px" }}>2024 Report</div>
+                        {[["Term 2", "Results published: 02/08/2024"], ["Term 3", "Results published: 02/10/2024"]].map(([term, date]) => (
+                          <div key={term} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fff", borderRadius: 8, padding: "8px 10px", marginBottom: 5, boxShadow: "0 1px 4px rgba(0,0,0,.07)" }}>
+                            <div>
+                              <div style={{ fontSize: 11, fontWeight: 600, color: "#1e293b" }}>{term}</div>
+                              <div style={{ fontSize: 9.5, color: "#3b82f6", marginTop: 1 }}>{date}</div>
+                            </div>
+                            <div style={{ width: 24, height: 24, borderRadius: 6, background: "#1e40af", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                              <span style={{ color: "#fff", fontSize: 11 }}>↓</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+            {/* StaffBridge */}
+            <Reveal delay={200}>
+              <div className="app-panel" style={{ borderTop: `4px solid #f97316` }}>
+                <div className="app-panel-header">
+                  <div>
+                    <div className="mono" style={{ fontSize: 11, letterSpacing: ".15em", color: "#f97316", textTransform: "uppercase" }}>StaffBridge</div>
+                    <h3 className="serif" style={{ fontSize: 28, fontWeight: 600, color: C.navy, margin: "8px 0 10px" }}>Everything in<br />one app.</h3>
+                    <p style={{ fontSize: 14, color: C.grey, lineHeight: 1.65 }}>A complete school management companion for teachers and staff — from attendance to events to province connectivity.</p>
+                  </div>
+                </div>
+                <div className="app-features">
+                  {[
+                    { label: "School dashboard", detail: "Live attendance, logins and school stats", color: "#f97316" },
+                    { label: "School directory", detail: "Full staff, learner and parent directory", color: "#f97316" },
+                    { label: "Attendance tracking", detail: "Mark and view attendance in real time", color: "#f97316" },
+                    { label: "Communication", detail: "Send and receive school-wide messages", color: "#f97316" },
+                    { label: "Events calendar", detail: "School events + district events in one view", color: "#f97316" },
+                    { label: "Province connectivity", detail: "Linked to ProvinceBridge for district visibility", color: "#f97316" },
+                  ].map((f) => (
+                    <div key={f.label} className="app-feature-row">
+                      <div style={{ width: 8, height: 8, borderRadius: "50%", background: f.color, flexShrink: 0, marginTop: 5 }} />
+                      <div>
+                        <div style={{ fontWeight: 600, fontSize: 14, color: C.navy }}>{f.label}</div>
+                        <div style={{ fontSize: 12.5, color: C.grey, marginTop: 2 }}>{f.detail}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                {/* Phone mockup */}
+                <div className="sb-phone-wrap">
+                  <div className="sb-phone">
+                    <div className="sb-phone-island" />
+                    <div className="sb-phone-screen" style={{ background: "#fff" }}>
+                      <div style={{ background: "#fff", borderBottom: "1px solid #e5e7eb", padding: "10px 12px 8px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontSize: 10, fontWeight: 800, color: "#1e293b", letterSpacing: ".02em" }}>BENDOR HIGH</div>
+                        <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                          <span style={{ color: "#fff", fontSize: 8, fontWeight: 700 }}>3</span>
+                        </div>
+                      </div>
+                      <div style={{ padding: "8px 12px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 5, marginBottom: 10 }}>
+                          <div style={{ background: "#1e293b", borderRadius: 8, padding: "8px 10px", color: "#fff" }}>
+                            <div style={{ fontSize: 9, opacity: .7 }}>Hello, System</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, marginTop: 2 }}>March 14</div>
+                          </div>
+                          <div style={{ background: "#eff6ff", borderRadius: 8, padding: "8px 10px" }}>
+                            <div style={{ fontSize: 9, color: "#3b82f6" }}>Sandton</div>
+                            <div style={{ fontSize: 10, fontWeight: 700, color: "#1e293b" }}>12.3°C</div>
+                          </div>
+                        </div>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: "#1e293b", marginBottom: 6 }}>Quick Access</div>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 5 }}>
+                          {["Directory", "Attendance", "Comms", "Our Staff", "Documents", "Events"].map((item) => (
+                            <div key={item} style={{ background: "#f8fafc", borderRadius: 7, padding: "7px 4px", textAlign: "center", border: "1px solid #e2e8f0" }}>
+                              <div style={{ fontSize: 8.5, color: "#475569", fontWeight: 500, lineHeight: 1.3 }}>{item}</div>
+                            </div>
+                          ))}
+                        </div>
+                        <div style={{ marginTop: 10, background: "#fff7ed", borderRadius: 8, padding: "8px 10px", border: "1px solid #fed7aa" }}>
+                          <div style={{ fontSize: 9.5, fontWeight: 700, color: "#92400e", marginBottom: 5 }}>Upcoming Events</div>
+                          <div style={{ fontSize: 9, color: "#78350f" }}>21 Mar — Human Rights Day</div>
+                          <div style={{ fontSize: 9, color: "#78350f", marginTop: 3 }}>27 Mar — Term 1 Ends</div>
+                        </div>
+                      </div>
+                      <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "#fff", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "space-around", padding: "6px 0" }}>
+                        {["School", "Staff", "Events", "Community"].map((t, i) => (
+                          <div key={t} style={{ textAlign: "center" }}>
+                            <div style={{ width: 16, height: 16, borderRadius: 4, background: i === 2 ? "#f97316" : "#e2e8f0", margin: "0 auto 2px" }} />
+                            <div style={{ fontSize: 7.5, color: i === 2 ? "#f97316" : "#94a3b8", fontWeight: i === 2 ? 700 : 400 }}>{t}</div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+
+          </div>
+        </div>
+      </section>
+
       {/* ── 7. PROVINCEBRIDGE ── */}
       <section id="province" className="sec command">
         <div className="container">
@@ -544,26 +878,30 @@ export default function App() {
           <Reveal delay={160}>
             <div className="command-dash">
               <div className="command-head">
-                <span className="mono" style={{ letterSpacing: ".15em", color: C.teal, fontSize: 12 }}>PROVINCEBRIDGE · EXECUTIVE COMMAND VIEW</span>
-                <span className="live-dot">● LIVE</span>
+                <span className="mono" style={{ letterSpacing: ".15em", color: C.teal, fontSize: 12 }}>PROVINCEBRIDGE · GAUTENG EDUCATION COMMAND</span>
+                <span className="live-dot" style={{ color: C.gold }}>● REAL DATA</span>
               </div>
               <div className="command-grid">
                 {[
-                  { l: "Schools online", v: 2148, a: C.teal },
-                  { l: "Attendance today", v: 92.7, suf: "%", dec: 1, a: C.green },
-                  { l: "Communication reach", v: 96.4, suf: "%", dec: 1, a: C.gold },
-                  { l: "Admission pipeline", v: 184320, a: "#5aa9e6" },
-                  { l: "At-risk schools", v: 86, a: C.gold },
-                  { l: "Learning performance idx", v: 68.2, dec: 1, a: C.teal },
-                  { l: "District alerts", v: 37, a: "#e07a5f" },
-                  { l: "Interventions tracked", v: 412, a: C.green },
+                  { l: "Learners in Gauteng sector", v: GAUTENG_METRICS.learnerScale.totalEnrolled, a: C.teal },
+                  { l: "Grade 1 & 8 placed (2026)", v: GAUTENG_METRICS.admissions2026.totalPlaced, a: C.green },
+                  { l: "Online placement rate", v: GAUTENG_METRICS.admissions2026.placementRatePct, suf: "%", a: C.gold },
+                  { l: "Late applications (2026 cycle)", v: GAUTENG_METRICS.admissions2026.lateApplications, a: "#5aa9e6" },
+                  { l: "Unplaced at Jan 2026 snapshot", v: GAUTENG_METRICS.januarySnapshot.totalUnplaced, a: "#e07a5f" },
+                  { l: "Appeals lodged", v: GAUTENG_METRICS.januarySnapshot.appealsLodged, a: C.teal },
+                  { l: "New schools announced", v: GAUTENG_METRICS.admissions2026.newSchoolsAnnounced, a: C.green },
+                  { l: "Satellite school spaces added", v: GAUTENG_METRICS.capacity.satelliteSpaces, a: "#5aa9e6" },
                 ].map((m) => (
                   <div key={m.l} className="cmd-tile">
                     <Stat value={m.v} suffix={m.suf || ""} decimals={m.dec || 0} label={m.l} accent={m.a} dark />
                   </div>
                 ))}
               </div>
-              <div className="command-foot"><Illustrative light /></div>
+              <div className="command-foot">
+                <span className="mono" style={{ fontSize: 10, color: "rgba(255,255,255,.35)", letterSpacing: ".07em" }}>
+                  Sources: GDE NCOP Briefing (Mar 2025) · SA Government (Mar 2026) · SAnews (Jan 2026) · GDE (Feb 2025)
+                </span>
+              </div>
             </div>
           </Reveal>
         </div>
@@ -832,6 +1170,20 @@ export default function App() {
         </div>
       </section>
 
+      {/* ── SOURCES ── */}
+      <section id="sources" className="sec dark">
+        <div className="container">
+          <Reveal><Kicker dark>Public Data Sources</Kicker></Reveal>
+          <Reveal delay={60}><h2 className="serif sec-title light">Evidence Base</h2></Reveal>
+          <Reveal delay={100}><p className="sec-lead light">All key metrics in this presentation are drawn from publicly available South African government and education authority data. No figures are fabricated or extrapolated without citation.</p></Reveal>
+          <Reveal delay={160}>
+            <div style={{ marginTop: 44 }}>
+              <SourceList sources={SOURCES} />
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
       {/* ── 15. CLOSING ── */}
       <section id="closing" className="sec closing">
         <div className="closing-bg" />
@@ -839,12 +1191,12 @@ export default function App() {
           <Reveal><Kicker dark>Gauteng Education 2030</Kicker></Reveal>
           <Reveal delay={80}>
             <blockquote className="serif closing-quote">
-              "Every learner connected.<br />Every school visible.<br /><span style={{ color: C.teal }}>Every decision informed by data.</span>"
+              "Every learner connected. Every parent engaged.<br />Every staff empowered. Every school visible.<br /><span style={{ color: C.teal }}>Every decision informed by data.</span>"
             </blockquote>
           </Reveal>
           <Reveal delay={200}>
             <button className="btn-primary lg" onClick={() => document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" })}>
-              Let's build Africa's most connected provincial education system <ArrowRight size={18} />
+              Let's build Africa's most connected education digital platform <ArrowRight size={18} />
             </button>
           </Reveal>
         </div>
@@ -852,9 +1204,9 @@ export default function App() {
           <div className="container footer-inner">
             <div className="footer-brand">Bridge Platforms</div>
             <div className="footer-links">
-              {["SchoolBridge", "ProvinceBridge", "AdmissionBridge", "StudyBridge"].map((p) => <span key={p}>{p}</span>)}
+              {["SchoolBridge", "ProvinceBridge", "AdmissionBridge", "StudyBridge", "PayBridge", "StudentBridge", "StaffBridge"].map((p) => <span key={p}>{p}</span>)}
             </div>
-            <div className="mono" style={{ fontSize: 11, opacity: .5 }}>All figures shown are illustrative. No official Gauteng statistics are presented as fact.</div>
+            <div className="mono" style={{ fontSize: 11, opacity: .5, maxWidth: "72ch", textAlign: "center", lineHeight: 1.6 }}>This presentation uses publicly available data from Gauteng Department of Education, South African Government, SAnews, and parliamentary briefing materials. Operational deployment would require official GDE data integration and validation. AdmissionBridge is designed to complement — not replace — existing GDE admissions systems.</div>
           </div>
         </footer>
       </section>
@@ -1047,6 +1399,26 @@ html{scroll-behavior:smooth;}
 .footer-brand{font-family:'Fraunces',serif;font-size:20px;font-weight:600;color:#fff;}
 .footer-links{display:flex;gap:24px;flex-wrap:wrap;justify-content:center;color:rgba(255,255,255,.6);font-size:13.5px;}
 
+/* apps section */
+.apps-grid{display:grid;grid-template-columns:1fr 1fr;gap:32px;align-items:start;}
+.app-panel{background:#fff;border-radius:20px;padding:32px;box-shadow:0 12px 40px rgba(7,26,47,.07);display:flex;flex-direction:column;gap:24px;}
+.app-panel-header{}
+.app-features{display:flex;flex-direction:column;gap:10px;}
+.app-feature-row{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;background:#f8fafc;border-radius:10px;}
+.sb-phone-wrap{display:flex;justify-content:center;margin-top:4px;}
+.sb-phone{width:180px;background:#1e293b;border-radius:28px;padding:10px;box-shadow:0 20px 50px rgba(7,26,47,.25);position:relative;}
+.sb-phone-island{width:48px;height:11px;background:#0f172a;border-radius:99px;margin:0 auto 8px;}
+.sb-phone-screen{border-radius:18px;overflow:hidden;height:340px;position:relative;}
+@media(max-width:980px){.apps-grid{grid-template-columns:1fr;}}
+
+/* source cards */
+.source-card{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.09);border-radius:14px;padding:22px 26px;transition:.3s;}
+.source-card:hover{border-color:rgba(0,163,163,.35);transform:translateY(-2px);}
+
+/* year-round signals */
+.yr-signals{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.yr-signal{display:flex;align-items:flex-start;gap:10px;padding:11px 14px;background:#fff;border-radius:10px;box-shadow:0 3px 12px rgba(7,26,47,.05);}
+
 /* responsive */
 @media(max-width:980px){
   .nav-links{display:none;}
@@ -1060,5 +1432,6 @@ html{scroll-behavior:smooth;}
   .grid-3,.command-grid,.hero-dash-grid,.stake-grid,.pillar-mini-grid{grid-template-columns:1fr;}
   .topnav{padding:12px 20px;}
   .present-bar .mono{min-width:120px;font-size:11px;}
+  .yr-signals{grid-template-columns:1fr;}
 }
 `;

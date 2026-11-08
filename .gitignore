@@ -7,3 +7,8 @@ dist/
 
 _brandgen/
 .DS_Store
+
+# Generated decks (built with pptxgenjs)
+*.pptx
+*.pdf
+~$*

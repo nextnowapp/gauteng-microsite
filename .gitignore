@@ -6,3 +6,4 @@ dist/
 .vercel
 
 _brandgen/
+.DS_Store
